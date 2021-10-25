@@ -11,5 +11,5 @@ RUN echo "---------------------------------------------------------" \
 
 COPY file.sh /
 COPY app_ept.py /
-RUN  chmod 777 file.sh && chmod 777 app_ept.py
-ENTRYPOINT ["/file.sh"]
+RUN  chmod 777 file_ept.sh && chmod 777 app_ept.py
+ENTRYPOINT ["/file_ept.sh"]
