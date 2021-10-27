@@ -5,6 +5,7 @@ import os
 from string import Template
 import json
 import subprocess
+import requests
 from pprint import pprint
 import geopandas as gpd
 from shapely.geometry import Polygon
@@ -18,6 +19,12 @@ from shapely.geometry import Polygon
 #     make docstrings
 
 
+def get_ept_srs(ept_url):
+    x = requests.get(ept_url)
+    ept_json = json.loads(x.text)
+    return ept_json["srs"]["horizontal"]
+
+
 def bbox_from_vector(f, layer=None):
     """Returns minx, maxx, miny, maxy of vector file or layer"""
     v = gpd.read_file(f, layer=layer)
@@ -25,11 +32,11 @@ def bbox_from_vector(f, layer=None):
     return (min(x), max(x), min(y), max(y))
 
 
-def ept_window_query(xmin, xmax, ymin, ymax, ept, srs, outpath, tag=None):
+def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag=None):
     """ """
 
     # make a tag for the output file
-    loc = f"{int(xmin)}_{int(xmax)}_{int(ymin)}_{int(ymax)}"
+    loc = f"{int(minx)}_{int(maxx)}_{int(miny)}_{int(maxy)}"
     if tag:
         f = f"{loc}_{tag}"
     else:
@@ -37,7 +44,7 @@ def ept_window_query(xmin, xmax, ymin, ymax, ept, srs, outpath, tag=None):
     of = os.path.join(outpath, f + ".las")
 
     # make pipeline
-    bbox = ([xmin, xmax], [ymin, ymax])
+    bbox = ([minx, maxx], [miny, maxy])
     pipeline = make_pipe(ept, bbox, of, srs)
     json_file = os.path.join(outpath, f"{f}.json")
     with open(json_file, "w") as j:
@@ -53,9 +60,10 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
     """Creates, validates and then returns the pdal pipeline
 
     Arguments:
-    ept        -- String -Path to ept file.
+    ept        -- String - Path to ept file.
+    vector     -- String - Path to vetcor file for which points will be returned.
     bbox       -- Tuple  - Bounding box in srs coordintes,
-                  in the form: ([xmin, xmax], [ymin, ymax]).
+                  in the form: ([minx, maxx], [miny, maxy]).
     out_path   -- String - Path where the CHM shall be saved. Must include .tif exstension.
     srs        -- String - EPSG identifier for srs  being used. Defaults to EPSG:3857
                   because that is what ept files tend to use.
@@ -90,54 +98,102 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
 if __name__ == "__main__":
     """Returns subsets of supplied files clipped to bbox supplied in command or multiple bboxs specified in file using --bbxf"""
 
-    # parse args
+    # parse args -------------------------------------------------------------
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--bbox",
         type=str,
         required=False,
         help="""The extents of the resource to select in 2 dimensions, expressed as a string,
-    in the format: '([xmin, xmax], [ymin, ymax])' """,
+    in the format: '([minx, maxx], [miny, maxy])' """,
     )
+
     parser.add_argument(
         "--bbxf",
         type=str,
         required=False,
         help="""path to file with a bbox on each line""",
     )
-    parser.add_argument("--ept", type=str, required=True, help="path to ept")
+
     parser.add_argument(
-        "--srs",
+        "--vector",
         type=str,
-        required=True,
-        help="EPSG code of srs of files, all files must be in the same coordinate system",
+        required=False,
+        help="""Path to vector file for which points will be returned.""",
     )
+
+    parser.add_argument(
+        "--vector_list",
+        type=str,
+        required=False,
+        help="""Path to list of vector files for which points will be returned as seperate laz files""",
+    )
+
+    parser.add_argument("--ept", type=str, required=True, help="path to ept")
+
     parser.add_argument(
         "--out", type=str, required=True, help="path to output directory"
     )
+
     args = parser.parse_args()
 
-    # make list off bboxes
-    if args.bbox:
+    # make list off bboxes ---------------------------------------------------
+    if (args.bbox != None) + (args.bbxf != None) + (args.vector != None) + (
+        args.vector_list != None
+    ) != 1:
+        print(
+            "One must specify exactly one of bbox, bbxf, vector or vector_list. It appears you have done otherwise!"
+        )
+        return 1
+    elif args.layer and not args.vector:
+        print(
+            f"""A layer has been specified, but a vector file has not.
+            That is nonsense.
+            Ignoring layer {args.layer}"""
+        )
+    elif args.bbox:
         bboxes = [args.bbox]
     elif args.bbxf:
         bboxes = []
-        # try:
+
         with open(args.bbxf) as bxs:
             for line in bxs:
                 bboxes.append(line)
+    elif args.vector:
+        if args.layer:
+            layer = args.layer
+        else:
+            layer = None
+        minx, maxx, miny, maxy = bbox_from_vector(args.vector, layer=layer)
+        bboxes = [([minx, maxx], [miny, maxy])]
+    elif args.vector_list):
+        bboxes = []
+
+        with open(args.vector_list) as vectors:
+            for line in vectors:
+                minx, maxx, miny, maxy = bbox_from_vector(line)
+                bboxes.append(([minx, maxx], [miny, maxy]))
+        
     else:
-        print("One must either specify --bbox or --bbxf")
+        print(
+            "MysteryError: a mysterious error has occured.  No doubt you find this infuriating"
+        )
+
+    srs = get_ept_srs(args.ept)
 
     for bbox in bboxes:
-        # unpack the bbox string
-        xmin, xmax, ymin, ymax = (
-            bbox.strip("()").replace("[", "").replace("]", "").split(",")
-        )
-        xmin = float(xmin)
-        xmax = float(xmax)
-        ymin = float(ymin)
-        ymax = float(ymax)
+        if args.bbox or args.bbxs:
+            # unpack the bbox string
+            minx, maxx, miny, maxy = (
+                bbox.strip("()").replace("[", "").replace("]", "").split(",")
+            )
+            minx = float(minx)
+            maxx = float(maxx)
+            miny = float(miny)
+            maxy = float(maxy)
+        else:
+            ([minx, maxx], [miny, maxy]) = bbox
 
         # make a laz for the window from ept.
-        ept_window_query(xmin, xmax, ymin, ymax, args.ept, args.srs, args.out, tag=None)
+        ept_window_query(minx, maxx, miny, maxy, args.ept, args.srs, args.out, tag=None)
