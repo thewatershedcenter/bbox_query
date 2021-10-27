@@ -145,7 +145,7 @@ if __name__ == "__main__":
         print(
             "One must specify exactly one of bbox, bbxf, vector or vector_list. It appears you have done otherwise!"
         )
-        return 1
+        break
     elif args.layer and not args.vector:
         print(
             f"""A layer has been specified, but a vector file has not.
