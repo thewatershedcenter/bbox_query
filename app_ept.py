@@ -167,14 +167,14 @@ if __name__ == "__main__":
             layer = None
         minx, maxx, miny, maxy = bbox_from_vector(args.vector, layer=layer)
         bboxes = [([minx, maxx], [miny, maxy])]
-    elif args.vector_list):
+    elif args.vector_list:
         bboxes = []
 
         with open(args.vector_list) as vectors:
             for line in vectors:
                 minx, maxx, miny, maxy = bbox_from_vector(line)
                 bboxes.append(([minx, maxx], [miny, maxy]))
-        
+
     else:
         print(
             "MysteryError: a mysterious error has occured.  No doubt you find this infuriating"
