@@ -6,7 +6,9 @@ import json
 import subprocess
 from pprint import pprint
 
-
+#TODO un-hardcode threads in make_pipe
+#     un-hardcode resolution in make_pipe
+#     make docstrings
 
 def ept_window_query(xmin, xmax, ymin, ymax, ept, srs, outpath, tag=None):
     ''' '''
@@ -42,7 +44,7 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
     srs        -- String - EPSG identifier for srs  being used. Defaults to EPSG:3857
                   because that is what ept files tend to use.
     threads    -- Int    - Number os threads to be used by the reader.ept. Defaults to 4.
-    resolution -- Int or Float - resolution (m) used by writers.gdal
+    resolution -- Int or Float - resolution (srs units) used by writers.gdal
     '''
 
     pipe = {
