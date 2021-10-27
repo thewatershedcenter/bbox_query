@@ -22,13 +22,16 @@ from shapely.geometry import Polygon
 def get_ept_srs(ept_url):
     x = requests.get(ept_url)
     ept_json = json.loads(x.text)
-    return ept_json["srs"]["horizontal"]
+    srs = ept_json["srs"]["horizontal"]
+    srs = f"EPSG:{srs}"
+    return srs
 
 
 def bbox_from_vector(f, layer=None):
     """Returns minx, maxx, miny, maxy of vector file or layer"""
     v = gpd.read_file(f, layer=layer)
     x, y = v.geometry.envelope.exterior.values[0].coords.xy
+    v.geometry.envelope.to_file(f.partition(".")[0] + "envelope.shp")
     return (min(x), max(x), min(y), max(y))
 
 
@@ -196,4 +199,4 @@ if __name__ == "__main__":
             ([minx, maxx], [miny, maxy]) = bbox
 
         # make a laz for the window from ept.
-        ept_window_query(minx, maxx, miny, maxy, args.ept, args.srs, args.out, tag=None)
+        ept_window_query(minx, maxx, miny, maxy, args.ept, srs, args.out, tag=None)
