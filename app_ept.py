@@ -31,7 +31,6 @@ def bbox_from_vector(f, layer=None):
     """Returns minx, maxx, miny, maxy of vector file or layer"""
     v = gpd.read_file(f, layer=layer)
     x, y = v.geometry.envelope.exterior.values[0].coords.xy
-    v.geometry.envelope.to_file(f.partition(".")[0] + "envelope.shp")
     return (min(x), max(x), min(y), max(y))
 
 
