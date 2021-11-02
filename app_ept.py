@@ -1,3 +1,4 @@
+#%%
 import argparse
 import os
 
@@ -10,6 +11,7 @@ from pprint import pprint
 import geopandas as gpd
 from shapely.geometry import Polygon
 
+#%%
 # TODO:
 #     Allow for passage of shp, gpgk, geojson, or tiff instead of bbox
 #     find epsg from ept so it needn't be passed
@@ -96,7 +98,7 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
     # else:
     #    raise Exception('Bad pipeline (sorry to be so ambigous)!')
 
-
+#%%
 if __name__ == "__main__":
     """Returns subsets of supplied files clipped to bbox supplied in command or multiple bboxs specified in file using --bbxf"""
 
@@ -199,3 +201,5 @@ if __name__ == "__main__":
 
         # make a laz for the window from ept.
         ept_window_query(minx, maxx, miny, maxy, args.ept, srs, args.out, tag=None)
+
+# %%
