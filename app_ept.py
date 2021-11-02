@@ -85,9 +85,10 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
                 "spatialreference": srs,
                 "threads": threads,
             },
-            {"type": "filters.outlier", "method": "radius", "radius": 1.0, "min_k": 4},
-            {"type": "filters.range", "limits": "returnnumber[1:1]"},
-            {"type": "writers.las", "filename": out_path, "a_srs": srs},
+            {
+                "type": "writers.las",
+                "filename": out_path,
+                "a_srs": srs}
         ]
     }
     return pipe
