@@ -17,5 +17,5 @@ while getopts 'e:dv' flag; do
   esac
 done
 
-
+echo $vector
 python app_ept.py  --ept=$EPT --out=/out $vector
