@@ -19,3 +19,7 @@ SRS=$4
 docker run --rm -it -v $PWD:/work  -v $OUTPATH:/out -u $(id -u):$(id -g) -e HOME=/work -w /work quay.io/kulpojke/bbox_query:ept-sha-8167227 $BBOX $SRS $EPT
 
 #./start.sh ~/Downloads https://storage.googleapis.com/monument_bucket/carr/entwine/ept.json 
+
+# V='/work/test/test_buff.shp'
+# EPT='https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
+# docker run --rm -it -v $PWD:/work  -v /media/data/Downloads:/out -u $(id -u):$(id -g) -e HOME=/work -w /work quay.io/kulpojke/bbox_query:ept-sha-acd3c17 -e $EPT -v $V

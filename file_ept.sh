@@ -10,8 +10,8 @@ print_usage() {
 while getopts 'e:dv' flag; do
   case "${flag}" in
     e) EPT="${OPTARG}" ;;
-    d) vector="--vector_dir${OPTARG}" ;;
-    v) vector="--vector${OPTARG}" ;;
+    d) vector="--vector_dir\ ${OPTARG}" ;;
+    v) vector="--vector\ ${OPTARG}" ;;
     *) print_usage
        exit 1 ;;
   esac
