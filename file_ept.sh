@@ -1,8 +1,21 @@
 #!/bin/sh
 
-BBOX=$1
-SRS=$2
-EPT=$3
-echo "------------------------------------------------------------------------"
+EPT=''
+vector_dir=''
 
-python app_ept.py --bbox=$BBOX --srs=$SRS --ept=$EPT --out=/out
+print_usage() {
+  printf "Usage: Is this worth it since it runs in a container?"
+}
+
+while getopts 'e:dv' flag; do
+  case "${flag}" in
+    e) EPT="${OPTARG}" ;;
+    d) vector="--vector_dir${OPTARG}" ;;
+    v) vector="--vector${OPTARG}" ;;
+    *) print_usage
+       exit 1 ;;
+  esac
+done
+
+
+python app_ept.py  --ept=$EPT --out=/out $vector

@@ -13,6 +13,8 @@ import geopandas as gpd
 #     un-hardcode resolution in make_pipe
 #     make docstrings
 #     update make_pipe docstring
+#     Instead of having seperate flags for vector and 
+#          vector_dir, just test for is file or is dir
 
 
 def get_ept_srs(ept_url):
@@ -143,15 +145,15 @@ if __name__ == "__main__":
         "--vector",
         type=str,
         required=False,
-        help="""Path to vector file for which points will be returned.""",
+        help="Path to vector file for which points will be returned.",
     )
 
     parser.add_argument(
         "--vector_dir",
         type=str,
         required=False,
-        help="""Path to list of vector files for which points will be returned
-        as seperate laz files""",
+        help="""Path to vector files for which points will be returned
+        as seperate laz files.""",
     )
 
     parser.add_argument("--ept", type=str, required=True, help="path to ept")
