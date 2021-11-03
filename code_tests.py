@@ -5,7 +5,10 @@ from app_ept import *
 reload(app_ept)
 from app_ept import *
 
-vector='/media/data/WRTC/bbox_query/test/test_buff.shp'
+vector = '/media/data/WRTC/bbox_query/test/test_buff.shp'
+ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
+outpath = '/media/data/Downloads'
+fname = 'GALNAKRAFTORNA'
 
 def xy_test(to_srs, vector=vector, layer=None):
     '''
@@ -46,7 +49,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 usgs = pd.DataFrame({'x': [489000, 489000, 489749.99, 489749.99],
-                  'y': [4514250, 4514999.99, 4514999.99, 4514250]})
+                     'y': [4514250, 4514999.99, 4514999.99, 4514250]})
 
 geometry = gpd.points_from_xy(usgs['x'], usgs['y'])
 
@@ -60,5 +63,12 @@ usgs.plot(ax=ax)
 s.plot(ax=ax)
 
 # %%
+# get the bbox from the vector
+x, y = s.geometry.envelope.exterior.values[0].coords.xy
+minx, maxx, miny, maxy = min(x), max(x), min(y), max(y)
 
+# pack up the bbox into the bboxes list
+bboxes = [([minx, maxx], [miny, maxy])]
+
+query_from_list(bboxes, srs, outpath, fname, ept)
 # %%
