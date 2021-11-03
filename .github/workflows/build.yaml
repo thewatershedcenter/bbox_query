@@ -36,7 +36,7 @@ jobs:
       - name: Set Container Tag Normal 
         run: |
           container="${{ env.registry }}/${{ env.username}}/${{ env.repository }}:${{ matrix.dockerfile[1] }}${{ steps.shorty.outputs.sha7 }}"
-          latest="${{ env.registry }}/${{ env.username}}/${{ env.repository }}:latest
+          latest="${{ env.registry }}/${{ env.username}}/${{ env.repository }}:latest"
           echo "container=${container}" >> $GITHUB_ENV
           echo "versioned=${container}" >> $GITHUB_ENV
           echo "latest=${latest}" >> $GITHUB_ENV
