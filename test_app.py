@@ -31,4 +31,4 @@ def test_transform_vector():
     # get transformed polygon of interest
     s = transform_vector(vector, srs)
 
-    assert poly.contains(s.geometry.values[0]) == 'pig'
+    assert poly.contains(s.geometry.values[0])
