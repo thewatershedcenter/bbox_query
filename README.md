@@ -13,6 +13,9 @@ __Future:__ Includes options to write common raster derivatives and/or return th
   `--ept EPT`                Path to ept
   `--out OUT`                Path to output directory
 
+__Example:__
+```./app_ept.py --ept=https://some_stinkin_bucket/entwine/ept.json --out=data --vector=asgard.shp```
+
 __Future:__ Run in container. 
 
 ## This uses PDAL...
