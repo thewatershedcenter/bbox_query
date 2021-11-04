@@ -1,4 +1,4 @@
-name: pdal2
+name: pdal+
 channels:
   - conda-forge
   - defaults

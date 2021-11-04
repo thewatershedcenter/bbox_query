@@ -4,6 +4,13 @@ Utility for retrieving points within  a polygon from an EPT. Currently writes th
 __Future:__ Includes options to write common raster derivatives and/or return the pointcloud.  Also can accept a custom PDAL pipeline.
 
 # Usage
+## Set up environment
+This depends on pdal and geopandas. If you do not have an environment set up with the dependenies, first prepare your environment (or alternately you can run program from a docker,explained below)). The `environment.yaml` file which is included can be used to create and envirnment with conda. In a directory with the yaml, in the terminal type:
+
+```conda env create -f environment.yml```
+
+This will create an environment call `pdal+`.
+
 `app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
  
  optional arguments:
@@ -16,7 +23,8 @@ __Future:__ Includes options to write common raster derivatives and/or return th
 __Example:__
 ```./app_ept.py --ept=https://some_stinkin_bucket/entwine/ept.json --out=data --vector=asgard.shp```
 
-__Future:__ Run in container. 
+## Run from container.
+Coming soon. 
 
 ## This uses PDAL...
 
