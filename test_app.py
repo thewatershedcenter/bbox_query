@@ -26,7 +26,7 @@ def test_transform_vector():
     points = gpd.points_from_xy(usgs['x'], usgs['y'])
 
     # make polygon
-    poly = gm.Polygon([[p.x, p.y] for p in usgs.geometry])
+    poly = gm.Polygon([[p.x, p.y] for p in points])
 
     # get transformed polygon of interest
     s = transform_vector(vector, srs)
