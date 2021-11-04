@@ -42,10 +42,10 @@ def read_and_transform_vector(vector, srs):
 
 def bbox_from_vector(vector, srs):
     # get the basename for namint the las
-    fname = os.path.basename(args.vector).split('.')[0]
+    fname = os.path.basename(vector).split('.')[0]
 
     # load and transform vector file
-    s = read_and_transform_vector(args.vector, srs)
+    s = read_and_transform_vector(vector, srs)
 
     # get the bbox from the vector
     x, y = s.geometry.envelope.exterior.values[0].coords.xy
@@ -78,7 +78,8 @@ def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag=None):
     # make pdal comand
     cmd = f"pdal pipeline -i {json_file} --developer-debug"
     _ = subprocess.run(cmd, shell=True, capture_output=True)
-    print(f"stdout:\n{_.stdout}\n\n\nerrors:\n{_.stderr}")
+    if len(_.stderr) > 0:
+        print(_.stderr)
 
 
 def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
