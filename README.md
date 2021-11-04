@@ -26,7 +26,7 @@ __Example:__
 ## Run from container.
 Coming soon. 
 
-## This uses PDAL...
+### This uses PDAL, the license for which is as follows:
 
 Copyright (c) 2019, Hobu, Inc. (howard@hobu.co)
 
