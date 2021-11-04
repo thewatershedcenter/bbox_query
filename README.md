@@ -1,12 +1,19 @@
 # bbox_query
-Utility for querying EPTs by bounding box. Includes options to write common raster derivatives and/or return the pointcloud.  Also can accept a custom PDAL pipeline.
+Utility for retrieving points within  a polygon from an EPT. Currently writes them to a `.las` file.
 
-# Blah
-not yet written
+__Future:__ Includes options to write common raster derivatives and/or return the pointcloud.  Also can accept a custom PDAL pipeline.
 
 # Usage
-not yet written
+`app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
+ 
+ optional arguments:
+  `-h, --help`               Show this help message and exit
+  `--vector VECTOR`          Path to vector file for which points will be returned.
+  `--vector_dir VECTOR_DIR`  Path to vector files for which points will be returned as seperate laz files.
+  `--ept EPT`                Path to ept
+  `--out OUT`                Path to output directory
 
+__Future:__ Run in container. 
 
 ## This uses PDAL...
 

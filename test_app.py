@@ -29,6 +29,6 @@ def test_transform_vector():
     poly = gm.Polygon([[p.x, p.y] for p in points])
 
     # get transformed polygon of interest
-    s = transform_vector(vector, srs)
+    s = read_and_transform_vector(vector, srs)
 
     assert poly.contains(s.geometry.values[0])
