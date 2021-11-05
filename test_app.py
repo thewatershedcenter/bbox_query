@@ -1,3 +1,4 @@
+#%% 
 from app_ept import *
 import pandas as pd
 import geopandas as gpd
@@ -70,12 +71,12 @@ def test_fetch_points_dir():
     # ls the dector_dir
     vectors = [os.path.join(vector2, f)
                    for f in os.listdir(vector2)
-                   if f.endswith('.gpkg') or 
-                   if f.endswith('.shp') or
-                   if f.endswith('.geojson')]
+                   if f.endswith('.gpkg')  
+                   or f.endswith('.shp') 
+                   or f.endswith('.geojson')]
 
     for vector in vectors:
-        bbox, fname = bbox_from_vector(vector)
+        bbox, fname = bbox_from_vector(vector, srs)
         bboxes.append(bbox)
         fnames.append(fname)
 
@@ -86,4 +87,5 @@ def test_fetch_points_dir():
     for fname in fnames:
         cmd = f'pdal info {fname}.las'
         result = subprocess.run(cmd, shell=True, capture_output=True)
-        assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] == test_count
+        assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] > 100
+

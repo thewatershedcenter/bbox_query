@@ -188,14 +188,14 @@ if __name__ == "__main__":
 
         # ls the dector_dir
         vectors = [os.path.join(args.vector_dir, f)
-                   for f in os.listdir(args.vector_dir)
-                   if f.endswith('.gpkg') or 
-                   if f.endswith('.shp') or
-                   if f.endswith('.geojson')]
+                   for f in os.listdir(args.vector)
+                   if f.endswith('.gpkg')  
+                   or f.endswith('.shp') 
+                   or f.endswith('.geojson')]
 
         # TODO: if this is slow rewrite to be dask-able
         for vector in vectors:
-            bbox, fname = bbox_from_vector(vector)
+            bbox, fname = bbox_from_vector(vector, srs)
             bboxes.append(bbox)
             fnames.append(fname)
 
