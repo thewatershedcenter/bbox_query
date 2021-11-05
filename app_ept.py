@@ -128,16 +128,16 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
     #    raise Exception('Bad pipeline (sorry to be so ambigous)!')
 
 
-def query_from_list(bboxes, srs, outpath, tag, ept):
+def query_from_list(bboxes, srs, outpath, tags, ept):
     '''queries all the boxes in the list
        TODO :Dask'''
 
-    for bbox in bboxes:
+    for i, bbox in enumerate(bboxes):
         ([minx, maxx], [miny, maxy]) = bbox
 
         # make a laz for the window from ept.
         ept_window_query(minx, maxx, miny, maxy,
-                         ept, srs, outpath, tag=tag)
+                         ept, srs, outpath, tag=tags[i])
 
 
 if __name__ == "__main__":
@@ -152,14 +152,6 @@ if __name__ == "__main__":
         type=str,
         required=False,
         help="Path to vector file for which points will be returned.",
-    )
-
-    parser.add_argument(
-        "--vector_dir",
-        type=str,
-        required=False,
-        help="""Path to vector files for which points will be returned
-        as seperate laz files.""",
     )
 
     parser.add_argument("--ept", type=str, required=True, help="path to ept")
@@ -182,26 +174,30 @@ if __name__ == "__main__":
         )
 
     # make list off bboxes
-    if args.vector:
+    if os.path.isfile(args.vector):
         bbox, fname = bbox_from_vector(args.vector, srs)
 
         # put into the bboxes list
         bboxes = [bbox]
+        fnames = [fname]
 
-    elif args.vector_dir:
+    elif os.path.isdir(args.vector):
         # empty list for boxes
         bboxes = []
         fnames = []
 
         # ls the dector_dir
         vectors = [os.path.join(args.vector_dir, f)
-                   for f in os.listdir(args.vector_dir)]
+                   for f in os.listdir(args.vector_dir)
+                   if '.gpkg' in f or
+                   if '.shp' in f or
+                   if geojson in f]
 
         # TODO: if this is slow rewrite to be dask-able
         for vector in vectors:
             bbox, fname = bbox_from_vector(vector)
             bboxes.append(bbox)
-            fname.append(fname)
+            fnames.append(fname)
 
     else:
         print(
@@ -209,4 +205,4 @@ if __name__ == "__main__":
             this infuriating"""
         )
 
-    query_from_list(bboxes, srs, args.out, fname, args.ept)
+    query_from_list(bboxes, srs, args.out, fnames, args.ept)

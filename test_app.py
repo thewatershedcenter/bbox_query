@@ -6,15 +6,19 @@ import subprocess
 import json
 
 vector = 'test/test_buff.shp'
+vector2 = 'test/'
 ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
 out = '.'
 test_count = 442255
 
+
 def test_get_ept_srs():
+    '''tests that srs can be retrieved'''
     assert get_ept_srs(ept) == 'EPSG:6339'
 
 
 def test_transform_vector():
+    '''tests that vector file can be read and transformed to srs'''
     # get srs
     srs = get_ept_srs(ept)
 
@@ -34,7 +38,8 @@ def test_transform_vector():
     assert poly.contains(s.geometry.values[0])
 
 
-def test_fetch_points():
+def test_fetch_points_file():
+    '''tests when vector points to single file'''
     # get srs
     srs = get_ept_srs(ept)
 
@@ -52,4 +57,33 @@ def test_fetch_points():
     result = subprocess.run(cmd, shell=True, capture_output=True)
     assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] == test_count
 
-test_fetch_points()
+
+def test_fetch_points_dir():
+    '''tests when vector points to dir'''
+    # get srs
+    srs = get_ept_srs(ept)
+
+   # empty list for boxes
+    bboxes = []
+    fnames = []
+
+    # ls the dector_dir
+    vectors = [os.path.join(args.vector_dir, f)
+               for f in os.listdir(args.vector_dir)
+               if '.gpkg' in f or
+               if '.shp' in f or
+               if geojson in f]
+
+    for vector in vectors:
+        bbox, fname = bbox_from_vector(vector)
+        bboxes.append(bbox)
+        fnames.append(fname)
+
+    # download the pointcloud
+    query_from_list(bboxes, srs, out, fnames, ept)
+
+    # make sure there are points
+    for fname in fnames:
+        cmd = f'pdal info {fname}.las'
+        result = subprocess.run(cmd, shell=True, capture_output=True)
+        assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] == test_count
