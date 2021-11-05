@@ -88,4 +88,3 @@ def test_fetch_points_dir():
         cmd = f'pdal info {fname}.las'
         result = subprocess.run(cmd, shell=True, capture_output=True)
         assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] > 100
-
