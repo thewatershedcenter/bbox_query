@@ -9,9 +9,13 @@ This depends on pdal and geopandas. If you do not have an environment set up wit
 
 ```conda env create -f environment.yml```
 
-This will create an environment called pdal+.
+This will create an environment called pdal+. Activate the environment by typing:
 
-`./app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
+```conda activate pdal+```
+
+Then, from within the active environment:
+
+`./app_ept.py [-h] --vector [ VECTORFILE ] --vector_dir [ DIRECTORY ] --ept EPT  --out OUT`
  
  optional arguments:
 
