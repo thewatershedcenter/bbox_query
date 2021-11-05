@@ -68,11 +68,11 @@ def test_fetch_points_dir():
     fnames = []
 
     # ls the dector_dir
-    vectors = [os.path.join(args.vector_dir, f)
-               for f in os.listdir(args.vector_dir)
-               if '.gpkg' in f or
-               if '.shp' in f or
-               if geojson in f]
+    vectors = [os.path.join(vector2, f)
+                   for f in os.listdir(vector2)
+                   if f.endswith('.gpkg') or 
+                   if f.endswith('.shp') or
+                   if f.endswith('.geojson')]
 
     for vector in vectors:
         bbox, fname = bbox_from_vector(vector)
