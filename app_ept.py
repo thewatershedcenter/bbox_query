@@ -179,7 +179,7 @@ if __name__ == "__main__":
         fnames = []
 
         # ls the dector_dir
-        vectors = [os.path.join(args.vector_dir, f)
+        vectors = [os.path.join(args.vector, f)
                    for f in os.listdir(args.vector)
                    if f.endswith('.gpkg')  
                    or f.endswith('.shp') 
