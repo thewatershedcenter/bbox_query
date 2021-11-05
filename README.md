@@ -11,7 +11,7 @@ This depends on pdal and geopandas. If you do not have an environment set up wit
 
 This will create an environment called pdal+.
 
-`app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
+`./app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
  
  optional arguments:
 
