@@ -31,7 +31,11 @@ __Example:__
 
 ## Run from container
 
-Download the start.sh script.  Use the -h flag to see usage. It is very simple. 
+Download the start.sh script.  Use the -h flag to see usage. It is very simple.
+
+__Example__
+
+```./start.sh path/to/tapiola.shp https://some_stinkin_bucket/entwine/ept.json /path/where/out_files_go/```
 
 ### This uses PDAL, the license for which is as follows:
 
