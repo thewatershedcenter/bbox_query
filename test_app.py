@@ -56,7 +56,9 @@ def test_fetch_points_file():
     # make sure there are points
     cmd = f'pdal info {fname}.las'
     result = subprocess.run(cmd, shell=True, capture_output=True)
-    assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] > 100
+    count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
+    print(count)
+    assert count > 100
 
 
 def test_fetch_points_dir():
@@ -87,4 +89,17 @@ def test_fetch_points_dir():
     for fname in fnames:
         cmd = f'pdal info {fname}.las'
         result = subprocess.run(cmd, shell=True, capture_output=True)
-        assert json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count'] > 100
+        count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
+        print(count)
+        assert count > 100
+
+#%%
+
+
+test_fetch_points_file()
+
+#%%
+
+
+test_fetch_points_dir()
+# %%
