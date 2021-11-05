@@ -9,6 +9,9 @@ import subprocess
 import requests
 import geopandas as gpd
 
+import warnings
+warnings.filterwarnings('ignore')
+
 # TODO:
 #     Allow for reprojection
 #     un-hardcode threads in make_pipe

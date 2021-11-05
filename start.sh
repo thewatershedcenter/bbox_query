@@ -9,10 +9,10 @@ while getopts ":h" option; do
         echo "USAGE:"
         echo "     ./start.sh [ vector_path ] [ ept ] [ out_path ]"
         echo "      "
-        echo "      vector_path - Path (url might work) to a vector file or a"
-        echo "      directory of vector files."
+        echo "      vector_path - Relative path from PWD to a vector file or a"
+        echo "      directory of vector files (must be within PWD)."
         echo "      "
-        echo "      ept - url or path to ept file."
+        echo "      ept - url to ept file."
         echo "      "
         echo "      out_path - path where output las files will be saved."
         exit;;
@@ -27,3 +27,5 @@ OUT=$3
 
 #docker pull quay.io/kulpojke/bbox_query:latest && \
 docker run --rm -it -v $PWD:/work  -v $OUT:/out -u $(id -u):$(id -g) -e HOME=/work -w /work quay.io/kulpojke/bbox_query:latest --ept=$EPT --vector=$V --out=/out
+
+echo "Done !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

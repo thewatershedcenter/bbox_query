@@ -30,7 +30,8 @@ __Example:__
 ```./app_ept.py --ept=https://some_stinkin_bucket/entwine/ept.json --out=data --vector=asgard.shp```
 
 ## Run from container
-Coming soon. 
+
+Download the start.sh script.  Use the -h flag to see usage. It is very simple. 
 
 ### This uses PDAL, the license for which is as follows:
 
