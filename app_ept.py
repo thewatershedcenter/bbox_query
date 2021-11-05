@@ -165,14 +165,6 @@ if __name__ == "__main__":
     # find the srs of the ept
     srs = get_ept_srs(args.ept)
 
-    # Complain if things are not as they should be
-    if ((args.vector is not None) +
-       (args.vector_dir is not None) != 1):
-        raise Exception(
-            """One must specify exactly one of vector or vector_dir.
-            It appears you have done otherwise!"""
-        )
-
     # make list off bboxes
     if os.path.isfile(args.vector):
         bbox, fname = bbox_from_vector(args.vector, srs)

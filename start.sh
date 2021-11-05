@@ -25,7 +25,7 @@ V=$1
 EPT=$2
 OUT=$3
 
-#docker pull quay.io/kulpojke/bbox_query:latest && \
+docker pull quay.io/kulpojke/bbox_query:latest && \
 docker run --rm -it -v $PWD:/work  -v $OUT:/out -u $(id -u):$(id -g) -e HOME=/work -w /work quay.io/kulpojke/bbox_query:latest --ept=$EPT --vector=$V --out=/out
 
 echo "Done !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
