@@ -92,14 +92,3 @@ def test_fetch_points_dir():
         count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
         print(count)
         assert count > 100
-
-#%%
-
-
-test_fetch_points_file()
-
-#%%
-
-
-test_fetch_points_dir()
-# %%
