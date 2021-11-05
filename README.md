@@ -5,22 +5,28 @@ __Future:__ Includes options to write common raster derivatives and/or return th
 
 # Usage
 ## Set up environment
-This depends on pdal and geopandas. If you do not have an environment set up with the dependenies, first prepare your environment (or alternately you can run program from a docker,explained below)). The `environment.yaml` file which is included can be used to create an environment with conda. In a directory with the yaml, in the terminal type:
+This depends on pdal and geopandas. If you do not have an environment set up with the dependenies, first prepare your environment (or alternately you can run program from a docker,explained below)). The environment.yaml file which is included can be used to create an environment with conda. In a directory with the yaml, in the terminal type:
 
 ```conda env create -f environment.yml```
 
-This will create an environment call `pdal+`.
+This will create an environment called pdal+.
 
 `app_ept.py [-h] [--vector VECTORFILE] [--vector_dir DIRECTORY] --ept EPT  --out OUT`
  
  optional arguments:
+
   `-h, --help`               Show this help message and exit
+ 
   `--vector VECTOR`          Path to vector file for which points will be returned.
+ 
   `--vector_dir VECTOR_DIR`  Path to vector files for which points will be returned as seperate laz files.
+ 
   `--ept EPT`                Path to ept
+ 
   `--out OUT`                Path to output directory
 
 __Example:__
+
 ```./app_ept.py --ept=https://some_stinkin_bucket/entwine/ept.json --out=data --vector=asgard.shp```
 
 ## Run from container
