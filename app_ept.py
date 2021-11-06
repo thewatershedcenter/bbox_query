@@ -18,8 +18,7 @@ warnings.filterwarnings('ignore')
 #     un-hardcode resolution in make_pipe
 #     make docstrings
 #     update make_pipe docstring
-#     Instead of having seperate flags for vector and 
-#          vector_dir, just test for is file or is dir
+#
 
 
 def get_ept_srs(ept_url):

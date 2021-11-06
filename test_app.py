@@ -49,9 +49,10 @@ def test_fetch_points_file():
 
     # put into the bboxes list
     bboxes = [bbox]
+    fnames= [fname]
 
     # download the pointcloud
-    query_from_list(bboxes, srs, out, fname, ept)
+    query_from_list(bboxes, srs, out, fnames, ept)
 
     # make sure there are points
     cmd = f'pdal info {fname}.las'
