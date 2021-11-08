@@ -24,8 +24,8 @@ warnings.filterwarnings('ignore')
 def get_ept_srs(ept_url):
     x = requests.get(ept_url)
     ept_json = json.loads(x.text)
-    srs = ept_json["srs"]["horizontal"]
-    srs = f"EPSG:{srs}"
+    srs = ept_json['srs']['horizontal']
+    srs = f'EPSG:{srs}'
     return srs
 
 
@@ -74,27 +74,27 @@ def bbox_from_vector(vector, srs, file_hash):
 
 
 def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag):
-    """ """
+    ''' '''
 
     f = tag
-    of = os.path.join(outpath, f + ".las")
+    of = os.path.join(outpath, f + '.las')
 
     # make pipeline
     bbox = ([minx, maxx], [miny, maxy])
     pipeline = make_pipe(ept, bbox, of, srs)
-    json_file = os.path.join(outpath, f"{f}.json")
-    with open(json_file, "w") as j:
+    json_file = os.path.join(outpath, f'{f}.json')
+    with open(json_file, 'w') as j:
         json.dump(pipeline, j)
 
     # make pdal comand
-    cmd = f"pdal pipeline -i {json_file} --developer-debug"
+    cmd = f'pdal pipeline -i {json_file} --developer-debug'
     _ = subprocess.run(cmd, shell=True, capture_output=True)
     if len(_.stderr) > 0:
         print(_.stderr)
 
 
-def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
-    """Creates, validates and then returns the pdal pipeline
+def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
+    '''Creates, validates and then returns the pdal pipeline
 
     Arguments:
     ept        -- String - Path to ept file.
@@ -110,16 +110,26 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
     threads    -- Int    - Number os threads to be used by the reader.ept.
                   Defaults to 4.
     resolution -- Int or Float - resolution (srs units) used by writers.gdal
-    """
+    '''
 
     pipe = {
-        "pipeline": [
+        'pipeline': [
             {
-                "bounds": f"{bbox}",
-                "filename": ept,
-                "type": "readers.ept",
-                "spatialreference": srs,
-                "threads": threads,
+                'bounds': f'{bbox}',
+                'filename': ept,
+                'type': 'readers.ept',
+                'spatialreference': srs,
+                'threads': threads,
+            },
+            {
+                'type': 'filters.overlay',
+                'dimension': 'Classification',
+                'datasource': clip_file,
+                'Column': 'Pohjola'
+            },
+            {
+                'type': 'filters.range',
+                'limits': 'Classification!=900'
             },
             {
                 'type': 'filters.outlier',
@@ -132,9 +142,9 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
                 'count': 2
             },
             {
-                "type": "writers.las",
-                "filename": out_path,
-                "a_srs": srs}
+                'type': 'writers.las',
+                'filename': out_path,
+                'a_srs': srs}
         ]
     }
 
@@ -153,24 +163,24 @@ def query_from_list(bboxes, srs, outpath, tags, ept):
                          ept, srs, outpath, tag=tags[i])
 
 
-if __name__ == "__main__":
-    """Returns subsets of supplied files clipped to bbox supplied in command
-    or multiple bboxs specified in file using --bbxf"""
+if __name__ == '__main__':
+    '''Returns subsets of supplied files clipped to bbox supplied in command
+    or multiple bboxs specified in file using --bbxf'''
 
     # parse args -------------------------------------------------------------
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--vector",
+        '--vector',
         type=str,
         required=False,
-        help="Path to vector file for which points will be returned.",
+        help='Path to vector file for which points will be returned.',
     )
 
-    parser.add_argument("--ept", type=str, required=True, help="path to ept")
+    parser.add_argument('--ept', type=str, required=True, help='path to ept')
 
     parser.add_argument(
-        "--out", type=str, required=True, help="path to output directory"
+        '--out', type=str, required=True, help='path to output directory'
     )
 
     args = parser.parse_args()
@@ -210,8 +220,8 @@ if __name__ == "__main__":
 
     else:
         print(
-            """MysteryError: a mysterious error has occured.  No doubt you find
-            this infuriating"""
+            '''MysteryError: a mysterious error has occured.  No doubt you find
+            this infuriating'''
         )
 
     query_from_list(bboxes, srs, args.out, fnames, args.ept)
