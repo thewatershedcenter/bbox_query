@@ -40,8 +40,11 @@ def read_and_transform_vector(vector, srs, fname):
         init_srs = {'init': srs}
         # transform  s
         s = s.to_crs(init_srs)
-    # write  transformed s (or original) with new name
 
+    # add a column to use with overlay in pipe
+    s['Pohjola'] = 900
+
+    # write with new name
     new_name = f'{os.path.dirname(vector)}/{fname}_{srs_number}.gpkg'
     s.to_file(new_name)
 
