@@ -113,6 +113,16 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
                 "threads": threads,
             },
             {
+                'type': 'filters.outlier',
+                'method': 'radius',
+                'radius': 1.0,
+                'min_k': 6
+            },
+            {
+                'type': 'filters.hag_nn',
+                'count': 2
+            },
+            {
                 "type": "writers.las",
                 "filename": out_path,
                 "a_srs": srs}
