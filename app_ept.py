@@ -29,25 +29,36 @@ def get_ept_srs(ept_url):
     return srs
 
 
-def read_and_transform_vector(vector, srs):
-    # make init epsg string
-    init_srs = {'init': srs}
-
+def read_and_transform_vector(vector, srs, fname):
     # read the vector file
     s = gpd.read_file(vector)
+    # get the intiger from the srs
+    srs_number = int(srs.split(':')[-1])
 
-    # transform  s
-    s = s.to_crs(init_srs)
+    if srs_number != s.crs.to_epsg():
+        # make init epsg string
+        init_srs = {'init': srs}
+        # transform  s
+        s = s.to_crs(init_srs)
+    # write  transformed s (or original) with new name
+
+    new_name = f'{os.path.dirname(vector)}/{fname}_{srs_number}.gpkg'
+    s.write(new_name)
 
     return(s)
 
 
-def bbox_from_vector(vector, srs):
+def bbox_from_vector(vector, srs, file_hash):
     # get the basename for namint the las
     fname = os.path.basename(vector).split('.')[0]
+    fname = f'{fname}_{file_hash}'
 
     # load and transform vector file
-    s = read_and_transform_vector(vector, srs)
+    s = read_and_transform_vector(vector, srs, fname)
+
+    # make fname of transformed file from above step, needed later
+    srs_number = int(srs.split(':')[-1])
+    fname = f'{fname}_{srs_number}'
 
     # get the bbox from the vector
     x, y = s.geometry.envelope.exterior.values[0].coords.xy
@@ -59,15 +70,10 @@ def bbox_from_vector(vector, srs):
     return(box, fname)
 
 
-def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag=None):
+def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag):
     """ """
 
-    # make a tag for the output file
-    loc = f"{int(minx)}_{int(maxx)}_{int(miny)}_{int(maxy)}"
-    if tag:
-        f = tag
-    else:
-        f = f"{loc}"
+    f = tag
     of = os.path.join(outpath, f + ".las")
 
     # make pipeline
@@ -129,17 +135,8 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
         ]
     }
 
-    # pass a dict of stages based on flags as arg to this finction
-    # use for for-else loop inside of for loops to decide what stages to add
-    # for stage in dict_of_possible stages.keys():
-    #    for s in list_of_stages_passed_as_arg:
-    #        if s == stage:
-    #             pipeline[stage] =  dict_of_possible stages[stage]
-    #             break
-
-    #    actually no need for else
-
     return pipe
+
 
 def query_from_list(bboxes, srs, outpath, tags, ept):
     '''queries all the boxes in the list
@@ -185,8 +182,7 @@ if __name__ == "__main__":
 
     # make list off bboxes
     if os.path.isfile(args.vector):
-        bbox, fname = bbox_from_vector(args.vector, srs)
-        fname = f'{fname}_{hesher}'
+        bbox, fname = bbox_from_vector(args.vector, srs, hesher)
         # put into the bboxes list
         bboxes = [bbox]
         fnames = [fname]
@@ -205,8 +201,7 @@ if __name__ == "__main__":
 
         # TODO: if this is slow rewrite to be dask-able
         for vector in vectors:
-            bbox, fname = bbox_from_vector(vector, srs)
-            fname = f'{fname}_{hesher}'
+            bbox, fname = bbox_from_vector(vector, srs, hesher)
             bboxes.append(bbox)
             fnames.append(fname)
 
