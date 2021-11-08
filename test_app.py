@@ -1,4 +1,4 @@
-#%%
+#  %%
 from dataclasses import dataclass
 from app_ept import *
 import pandas as pd
@@ -6,6 +6,7 @@ import geopandas as gpd
 from shapely import geometry as gm
 import subprocess
 import json
+import os
 
 # TODO: add a dataclas called fake_args to act like args
 # wrap the end of app_ept in a functions so we can test here more directly
@@ -26,12 +27,21 @@ out = '.'
 
 args = FakeArgs(vector1, ept, out)
 
-vpath = os.path.dirname(args.vector)
 global vpath
+vpath = os.path.dirname(args.vector)
+
+
+#  %%
+
 
 def test_get_ept_srs():
     '''tests that srs can be retrieved'''
-    assert get_ept_srs(args.ept) == 'EPSG:6339'
+    srs = get_ept_srs(args.ept)
+    assert srs == 'EPSG:6339'
+
+
+
+# %%
 
 
 def test_transform_vector():
@@ -53,6 +63,9 @@ def test_transform_vector():
     s = read_and_transform_vector(args.vector, srs, 'arbitrary_string')
 
     assert poly.contains(s.geometry.values[0])
+
+
+# %%
 
 
 def test_fetch_points_file():
@@ -79,11 +92,15 @@ def test_fetch_points_file():
     assert count > 100
 
 
+# %%
+
+
 # change the vector to just dir
 args.vector = vector2
 
-vpath = os.path.dirname(args.vector)
+del(vpath)
 global vpath
+vpath = os.path.dirname(args.vector)
 
 
 def test_fetch_points_dir():
@@ -119,3 +136,5 @@ def test_fetch_points_dir():
         count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
         print(count)
         assert count > 100
+
+# %%
