@@ -118,14 +118,18 @@ def make_pipe(ept, bbox, out_path, srs, threads=4, resolution=1):
                 "a_srs": srs}
         ]
     }
+
+    # pass a dict of stages based on flags as arg to this finction
+    # use for for-else loop inside of for loops to decide what stages to add
+    # for stage in dict_of_possible stages.keys():
+    #    for s in list_of_stages_passed_as_arg:
+    #        if s == stage:
+    #             pipeline[stage] =  dict_of_possible stages[stage]
+    #             break
+
+    #    actually no need for else
+
     return pipe
-
-    # pipeline = pdal.Pipeline(pipe)
-    # if pipeline.validate():
-    # return(pipeline)
-    # else:
-    #    raise Exception('Bad pipeline (sorry to be so ambigous)!')
-
 
 def query_from_list(bboxes, srs, outpath, tags, ept):
     '''queries all the boxes in the list
@@ -161,13 +165,18 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # make an 8 digit hash so that it won't overwrite existing point clouds
+    # this is for the case where we run on multiple epts and some shapes
+    # fall into more than one ept.subprocess
+    hesher = abs(hash(args.ept)) % (10 ** 8)
+
     # find the srs of the ept
     srs = get_ept_srs(args.ept)
 
     # make list off bboxes
     if os.path.isfile(args.vector):
         bbox, fname = bbox_from_vector(args.vector, srs)
-
+        fname = f'{fname}_{hesher}'
         # put into the bboxes list
         bboxes = [bbox]
         fnames = [fname]
@@ -187,6 +196,7 @@ if __name__ == "__main__":
         # TODO: if this is slow rewrite to be dask-able
         for vector in vectors:
             bbox, fname = bbox_from_vector(vector, srs)
+            fname = f'{fname}_{hesher}'
             bboxes.append(bbox)
             fnames.append(fname)
 

@@ -6,6 +6,10 @@ from shapely import geometry as gm
 import subprocess
 import json
 
+# TODO: add a dataclas called fake_args to act like args
+# wrap the end of app_ept in a functions so we can test here more directly
+
+
 vector = 'test/test_buff.shp'
 vector2 = 'test/'
 ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
