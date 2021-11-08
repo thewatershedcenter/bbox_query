@@ -49,7 +49,7 @@ def test_fetch_points_file():
     srs = get_ept_srs(ept)
 
     # get bbox, fname
-    hesher = abs(hash(args.ept)) % (10 ** 8)
+    hesher = abs(hash(ept)) % (10 ** 8)
     bbox, fname = bbox_from_vector(vector, srs, hesher)
 
     # put into the bboxes list
@@ -83,7 +83,7 @@ def test_fetch_points_dir():
                    or f.endswith('.shp') 
                    or f.endswith('.geojson')]
 
-    hesher = abs(hash(args.ept)) % (10 ** 8)
+    hesher = abs(hash(ept)) % (10 ** 8)
 
     for vector in vectors:
         bbox, fname = bbox_from_vector(vector, srs, hesher)
