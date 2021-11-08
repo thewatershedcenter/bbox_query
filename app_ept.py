@@ -43,7 +43,7 @@ def read_and_transform_vector(vector, srs, fname):
     # write  transformed s (or original) with new name
 
     new_name = f'{os.path.dirname(vector)}/{fname}_{srs_number}.gpkg'
-    s.write(new_name)
+    s.to_file(new_name)
 
     return(s)
 
