@@ -76,18 +76,18 @@ def bbox_from_vector(vector, srs, file_hash):
 def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag):
     ''' '''
 
-    f = tag
-    of = os.path.join(outpath, f + '.las')
+    f = f'{vpath}/{tag}.gpkg'
+    of = os.path.join(outpath, tag + '.las')
 
     # make pipeline
     bbox = ([minx, maxx], [miny, maxy])
     pipeline = make_pipe(ept, bbox, of, srs)
-    json_file = os.path.join(outpath, f'{f}.json')
+    json_file = os.path.join(outpath, f'{tag}.json')
     with open(json_file, 'w') as j:
         json.dump(pipeline, j)
 
     # make pdal comand
-    cmd = f'pdal pipeline -i {json_file} --developer-debug'
+    cmd = f'pdal pipeline -i {json_file} --developer-debug && rm {json_file}'
     _ = subprocess.run(cmd, shell=True, capture_output=True)
     if len(_.stderr) > 0:
         print(_.stderr)
@@ -192,6 +192,9 @@ if __name__ == '__main__':
 
     # find the srs of the ept
     srs = get_ept_srs(args.ept)
+
+    vpath = os.path.dirname(args.vector)
+    global vpath
 
     # make list off bboxes
     if os.path.isfile(args.vector):
