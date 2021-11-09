@@ -139,6 +139,14 @@ def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
                 'limits': 'Pohjola[900:900]'
             },
             {
+                'type': 'filters.elm'
+            },
+            {
+                'type': 'filters.assign',
+                'assignment': 'Classification[:]=0',
+                'where': 'Classification > 20'
+            },
+            {
                 'type': 'filters.outlier',
                 'method': 'radius',
                 'radius': 1.0,
@@ -149,9 +157,14 @@ def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
                 'count': 2
             },
             {
+                'type': 'filters.range',
+                'limits': 'HeightAboveGround[0:88]'
+            },
+            {
                 'type': 'writers.las',
                 'filename': out_path,
-                'a_srs': srs}
+                'a_srs': srs,
+                'extra_dims': 'HeightAboveGround=float'}
         ]
     }
 
@@ -187,8 +200,6 @@ def query_from_list(bboxes, srs, outpath, vpath, tags, ept):
             # make a laz for the window from ept.
             ept_window_query(minx, maxx, miny, maxy,
                              ept, vpath, srs, outpath, tag=tags[i])
-
-
 
 
 def go():

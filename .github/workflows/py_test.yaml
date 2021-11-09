@@ -23,7 +23,7 @@ jobs:
       - run: conda --version
       - run: which python
       - run:
-          conda install -y pdal geopandas pytest
+          conda install -y pdal geopandas dask pytest
       - name: Run tests with pytest
         run: pytest 
 

@@ -72,10 +72,10 @@ def test_fetch_points_file():
 
     # get bbox, fname
     bbox, fname = bbox_from_vector(args.vector, args.srs, args.hesher)
-
+    print(args.vector, fname)
     # put into the bboxes list
     bboxes = [bbox]
-    fnames= [fname]
+    fnames = [fname]
 
     # download the pointcloud
     query_from_list(bboxes, args.srs, args.out, args.vpath, fnames, args.ept)
