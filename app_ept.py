@@ -125,14 +125,18 @@ def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
                 'threads': threads,
             },
             {
+                'type': 'filters.ferry',
+                'dimensions': '=>Pohjola'
+            },
+            {
                 'type': 'filters.overlay',
-                'dimension': 'Classification',
+                'dimension': 'Pohjola',
                 'datasource': clip_file,
                 'column': 'Pohjola'
             },
             {
                 'type': 'filters.range',
-                'limits': 'Classification[0:100]'
+                'limits': 'Pohjola[900:900]'
             },
             {
                 'type': 'filters.outlier',
