@@ -223,10 +223,10 @@ def go():
                    or f.endswith('.shp')
                    or f.endswith('.geojson')]
 
-    for vector in vectors:
-        bbox, fname = bbox_from_vector(vector, args.srs, args.hesher)
-        bboxes.append(bbox)
-        fnames.append(fname)
+        for vector in vectors:
+            bbox, fname = bbox_from_vector(vector, args.srs, args.hesher)
+            bboxes.append(bbox)
+            fnames.append(fname)
 
     else:
         print(
