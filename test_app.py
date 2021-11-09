@@ -1,5 +1,5 @@
 #  %%
-from dataclasses import dataclass
+from argparse import Namespace
 from app_ept import *
 import pandas as pd
 import geopandas as gpd
@@ -8,27 +8,27 @@ import subprocess
 import json
 import os
 
+
 # TODO: add a dataclas called fake_args to act like args
 # wrap the end of app_ept in a functions so we can test here more directly
 
-
-@dataclass
-class FakeArgs:
-    """Class for acting like we are getting args from argparse."""
-    vector: str
-    ept: str
-    out: str
-
-
 vector1 = 'test/test_buff.shp'
+
 vector2 = 'test/'
+
 ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
-out = '.'
 
-args = FakeArgs(vector1, ept, out)
+out = 'poo'
 
-global vpath
-vpath = os.path.dirname(args.vector)
+os.makedirs(out, exist_ok=True)
+
+global args
+args = Namespace(vector=vector1, ept=ept, out=out)
+
+# add additional args
+args.vpath = os.path.dirname(args.vector)
+args.hesher = abs(hash(args.ept)) % (10 ** 8)
+args.srs = get_ept_srs(args.ept)
 
 
 #  %%
@@ -38,7 +38,6 @@ def test_get_ept_srs():
     '''tests that srs can be retrieved'''
     srs = get_ept_srs(args.ept)
     assert srs == 'EPSG:6339'
-
 
 
 # %%
@@ -60,7 +59,7 @@ def test_transform_vector():
     poly = gm.Polygon([[p.x, p.y] for p in points])
 
     # get transformed polygon of interest
-    s = read_and_transform_vector(args.vector, srs, 'arbitrary_string')
+    s = read_and_transform_vector(args.vector, args.srs, 'arbitrary_string')
 
     assert poly.contains(s.geometry.values[0])
 
@@ -70,22 +69,19 @@ def test_transform_vector():
 
 def test_fetch_points_file():
     '''tests when vector points to single file'''
-    # get srs
-    srs = get_ept_srs(args.ept)
 
     # get bbox, fname
-    hesher = abs(hash(args.ept)) % (10 ** 8)
-    bbox, fname = bbox_from_vector(args.vector, srs, hesher)
+    bbox, fname = bbox_from_vector(args.vector, args.srs, args.hesher)
 
     # put into the bboxes list
     bboxes = [bbox]
     fnames= [fname]
 
     # download the pointcloud
-    query_from_list(bboxes, srs, out, fnames, args.ept)
+    query_from_list(bboxes, args.srs, args.out, args.vpath, fnames, args.ept)
 
     # make sure there are points
-    cmd = f'pdal info {fname}.las'
+    cmd = f'pdal info {args.out}/{fname}.las'
     result = subprocess.run(cmd, shell=True, capture_output=True)
     count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
     print(count)
@@ -98,15 +94,9 @@ def test_fetch_points_file():
 # change the vector to just dir
 args.vector = vector2
 
-del(vpath)
-global vpath
-vpath = os.path.dirname(args.vector)
-
 
 def test_fetch_points_dir():
     '''tests when vector points to dir'''
-    # get srs
-    srs = get_ept_srs(args.ept)
 
     # empty list for boxes
     bboxes = []
@@ -119,22 +109,20 @@ def test_fetch_points_dir():
                    or f.endswith('.shp') 
                    or f.endswith('.geojson')]
 
-    hesher = abs(hash(args.ept)) % (10 ** 8)
-
     for vector in vectors:
-        bbox, fname = bbox_from_vector(vector, srs, hesher)
+        bbox, fname = bbox_from_vector(vector, args.srs, args.hesher)
         bboxes.append(bbox)
         fnames.append(fname)
 
     # download the pointcloud
-    query_from_list(bboxes, srs, out, fnames, args.ept)
+    query_from_list(bboxes, args.srs, args.out, args.vpath, fnames, args.ept)
 
     # make sure there are points
     for fname in fnames:
-        cmd = f'pdal info {fname}.las'
+        cmd = f'pdal info {args.out}/{fname}.las'
         result = subprocess.run(cmd, shell=True, capture_output=True)
         count = json.loads(result.stdout.decode("utf-8"))['stats']['statistic'][0]['count']
         print(count)
         assert count > 100
-
+    
 # %%

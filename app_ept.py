@@ -2,12 +2,11 @@
 
 import argparse
 import os
-
-# import pdal
 import json
 import subprocess
 import requests
 import geopandas as gpd
+from shutil import rmtree
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -45,7 +44,9 @@ def read_and_transform_vector(vector, srs, fname):
     s['Pohjola'] = 900
 
     # write with new name
-    new_name = f'{os.path.dirname(vector)}/{fname}_{srs_number}.gpkg'
+    vpath = os.path.dirname(vector) + '/reproj'
+    os.makedirs(vpath, exist_ok=True)
+    new_name = f'{vpath}/{fname}_{srs_number}.gpkg'
     s.to_file(new_name)
 
     return(s)
@@ -73,9 +74,9 @@ def bbox_from_vector(vector, srs, file_hash):
     return(box, fname)
 
 
-def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag):
+def ept_window_query(minx, maxx, miny, maxy, ept, vpath, srs, outpath, tag):
     ''' '''
-    clip_file = f'{vpath}/{tag}.gpkg'
+    clip_file = f'{vpath}/reproj/{tag}.gpkg'
     of = os.path.join(outpath, tag + '.las')
 
     # make pipeline
@@ -86,7 +87,9 @@ def ept_window_query(minx, maxx, miny, maxy, ept, srs, outpath, tag):
         json.dump(pipeline, j)
 
     # make pdal comand
-    cmd = f'pdal pipeline -i {json_file} --developer-debug && rm {json_file}'
+    cmd = f'pdal pipeline -i {json_file} --developer-debug'
+
+    # run pdal  pipeline
     _ = subprocess.run(cmd, shell=True, capture_output=True)
     if len(_.stderr) > 0:
         print(_.stderr)
@@ -124,11 +127,11 @@ def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
                 'type': 'filters.overlay',
                 'dimension': 'Classification',
                 'datasource': clip_file,
-                'Column': 'Pohjola'
+                'column': 'Pohjola'
             },
             {
                 'type': 'filters.range',
-                'limits': 'Classification!=900'
+                'limits': 'Classification[0:100]'
             },
             {
                 'type': 'filters.outlier',
@@ -150,7 +153,7 @@ def make_pipe(ept, bbox, clip_file, out_path, srs, threads=4, resolution=1):
     return pipe
 
 
-def query_from_list(bboxes, srs, outpath, tags, ept):
+def query_from_list(bboxes, srs, outpath, vpath, tags, ept):
     '''queries all the boxes in the list
        TODO :Dask'''
 
@@ -159,7 +162,43 @@ def query_from_list(bboxes, srs, outpath, tags, ept):
 
         # make a laz for the window from ept.
         ept_window_query(minx, maxx, miny, maxy,
-                         ept, srs, outpath, tag=tags[i])
+                         ept, vpath, srs, outpath, tag=tags[i])
+
+
+def go():
+
+    # make list off bboxes
+    if os.path.isfile(args.vector):
+        bbox, fname = bbox_from_vector(args.vector, args.srs, args.hesher)
+        # put into the bboxes list
+        bboxes = [bbox]
+        fnames = [fname]
+
+    elif os.path.isdir(args.vector):
+        # empty list for boxes
+        bboxes = []
+        fnames = []
+
+        # ls the dector_dir
+        vectors = [os.path.join(args.vector, f)
+                   for f in os.listdir(args.vector)
+                   if f.endswith('.gpkg')
+                   or f.endswith('.shp')
+                   or f.endswith('.geojson')]
+
+    # TODO: if this is slow rewrite to be dask-able
+    for vector in vectors:
+        bbox, fname = bbox_from_vector(vector, args.srs, args.hesher)
+        bboxes.append(bbox)
+        fnames.append(fname)
+
+    else:
+        print(
+            '''MysteryError: a mysterious error has occured.  No doubt you find
+            this infuriating'''
+        )
+
+    query_from_list(bboxes, args.srs, args.out, args.vpath, fnames, args.ept)
 
 
 if __name__ == '__main__':
@@ -184,46 +223,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # make an 8 digit hash so that it won't overwrite existing point clouds
-    # this is for the case where we run on multiple epts and some shapes
-    # fall into more than one ept.subprocess
-    hesher = abs(hash(args.ept)) % (10 ** 8)
+    # add additional args
+    args.vpath = os.path.dirname(args.vector)
+    args.hesher = abs(hash(args.ept)) % (10 ** 8)
+    args.srs = get_ept_srs(args.ept)
 
-    # find the srs of the ept
-    srs = get_ept_srs(args.ept)
+    go()
 
-    global vpath
-    vpath = os.path.dirname(args.vector)
-
-    # make list off bboxes
-    if os.path.isfile(args.vector):
-        bbox, fname = bbox_from_vector(args.vector, srs, hesher)
-        # put into the bboxes list
-        bboxes = [bbox]
-        fnames = [fname]
-
-    elif os.path.isdir(args.vector):
-        # empty list for boxes
-        bboxes = []
-        fnames = []
-
-        # ls the dector_dir
-        vectors = [os.path.join(args.vector, f)
-                   for f in os.listdir(args.vector)
-                   if f.endswith('.gpkg')  
-                   or f.endswith('.shp') 
-                   or f.endswith('.geojson')]
-
-        # TODO: if this is slow rewrite to be dask-able
-        for vector in vectors:
-            bbox, fname = bbox_from_vector(vector, srs, hesher)
-            bboxes.append(bbox)
-            fnames.append(fname)
-
-    else:
-        print(
-            '''MysteryError: a mysterious error has occured.  No doubt you find
-            this infuriating'''
-        )
-
-    query_from_list(bboxes, srs, args.out, fnames, args.ept)
+    rmtree(f'{args.vpath}/reproj')
