@@ -9,7 +9,7 @@ RUN echo "---------------------------------------------------------" \
     && echo "---------------------------------------------------------"
 
 
-RUN conda install -y geopandas --channel conda-forge
+RUN conda install -y geopandas dask --channel conda-forge
 
 COPY file_ept.sh /
 COPY app_ept.py /
