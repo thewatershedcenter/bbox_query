@@ -7,6 +7,7 @@ import subprocess
 import requests
 import geopandas as gpd
 from shutil import rmtree
+from dask import delayed, compute
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -157,12 +158,33 @@ def query_from_list(bboxes, srs, outpath, vpath, tags, ept):
     '''queries all the boxes in the list
        TODO :Dask'''
 
-    for i, bbox in enumerate(bboxes):
-        ([minx, maxx], [miny, maxy]) = bbox
+    if len(bboxes) > 1:
+        lazy = []
 
-        # make a laz for the window from ept.
-        ept_window_query(minx, maxx, miny, maxy,
-                         ept, vpath, srs, outpath, tag=tags[i])
+        for i, bbox in enumerate(bboxes):
+            ([minx, maxx], [miny, maxy]) = bbox
+
+            # make a laz for the window from ept.
+            lazy.append(delayed(ept_window_query)(minx,
+                                                  maxx,
+                                                  miny,
+                                                  maxy, ept,
+                                                  vpath,
+                                                  srs,
+                                                  outpath,
+                                                  tag=tags[i]))
+
+        _ = compute(*lazy)
+
+    else:
+        for i, bbox in enumerate(bboxes):
+            ([minx, maxx], [miny, maxy]) = bbox
+
+            # make a laz for the window from ept.
+            ept_window_query(minx, maxx, miny, maxy,
+                             ept, vpath, srs, outpath, tag=tags[i])
+
+
 
 
 def go():
@@ -186,7 +208,6 @@ def go():
                    or f.endswith('.shp')
                    or f.endswith('.geojson')]
 
-    # TODO: if this is slow rewrite to be dask-able
     for vector in vectors:
         bbox, fname = bbox_from_vector(vector, args.srs, args.hesher)
         bboxes.append(bbox)
