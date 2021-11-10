@@ -11,6 +11,7 @@ RUN echo "---------------------------------------------------------" \
 # onstall pdal
 RUN conda install -y -c conda-forge numba \
     entwine \
+    dask \
     geopandas \
     h5py \
     laspy=2.0.3 \
