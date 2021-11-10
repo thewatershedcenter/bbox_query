@@ -7,7 +7,11 @@ from shapely import geometry as gm
 import subprocess
 import json
 import os
-
+import numpy as np
+import pandas as pd
+import dask.dataframe as ddf
+import dask.array as da
+from time import time
 
 vector1 = 'test/test_buff.shp'
 
@@ -61,6 +65,7 @@ def test_read_and_transform_vector():
 
 def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     '''tests both make_box and divide_bbox'''
+    
     # get srs
     srs = get_ept_srs(args.ept)
 
@@ -83,18 +88,41 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     print('Succesfully tested divide_bbox!')
 
     pipe = make_pipe(args.ept, bxs[2], srs)
-    print(type(pipe))
+    assert isinstance(pipe.arrays[0], np.ndarray)
+    assert len(pipe.arrays[0]) > 0
+    print(f'Pipeline executed returning a {type(pipe.arrays[0])} of {len(pipe.arrays[0])} points.')
 
-    count = pipe.execute()
-    print(count)
+    points = get_points_as_df(args.ept, bxs[2], srs)
+    assert isinstance(points, pd.DataFrame)
+    print(f'get_points_as_df succesfully returned a df of length {len(points)}')
 
+    lazy = get_lazy_dfs(bxs, args.ept, srs)
 
+    t0 = time()
+    points = ddf.from_delayed(lazy)
+
+    t1 = time()
+    print(f'from_delayed took {(t1-t0)/60}min')
+
+    t0 = time()
+    points = rechunk_ddf(points)
+
+    t1 = time()
+    print(f'rechunk took {(t1-t0)/60}min')
+
+    t0 = time()
+    points.to_hdf('/media/data/Downloads/test_output.hdf', '/data-*', compute=True)
+
+    t1 = time()
+    print(f'to_hdf took {(t1-t0)/60}min')
+
+# %%
+test_make_box_ALSO_divide_bbox_ALSO_make_pipe()
 # %%
 test_get_ept_srs()
 
 # %%
 test_read_and_transform_vector()
 
-# %%
-test_make_box_ALSO_divide_bbox_ALSO_make_pipe()
+
 # %%

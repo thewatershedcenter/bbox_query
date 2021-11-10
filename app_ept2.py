@@ -8,6 +8,9 @@ from shutil import rmtree
 from dask import delayed, compute
 import pdal
 import numpy as np
+import pandas as pd
+import dask.dataframe as ddf
+import dask.array as da
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -87,6 +90,7 @@ def divide_bbox(box, size):
 
     return(bxs)
 
+
 def make_pipe(ept, bbox, srs):
     '''Creates, validates and then returns the pdal pipeline'''
 
@@ -98,28 +102,6 @@ def make_pipe(ept, bbox, srs):
                 'filename': ept,
                 'type': 'readers.ept',
                 'spatialreference': srs
-            },
-            {
-                'type': 'filters.elm'
-            },
-            {
-                'type': 'filters.assign',
-                'assignment': 'Classification[:]=0',
-                'where': 'Classification > 20'
-            },
-            {
-                'type': 'filters.outlier',
-                'method': 'radius',
-                'radius': 1.0,
-                'min_k': 6
-            },
-            {
-                'type': 'filters.hag_nn',
-                'count': 2
-            },
-            {
-                'type': 'filters.range',
-                'limits': 'HeightAboveGround[0:88]'
             }
         ]
     }
@@ -129,9 +111,36 @@ def make_pipe(ept, bbox, srs):
 
     # vlidate and return or raise complaint
     if pipeline.validate():
+        pipeline.execute()
         return(pipeline)
     else:
         raise Exception('Bad pipeline (sorry to be so ambigous)!')
+
+
+def get_points_as_df(ept, bbox, srs):
+    '''cals makepipe, returns just the array of points'''
+    pipe = make_pipe(ept, bbox, srs)
+    arr = pipe.arrays[0]
+    df = pd.DataFrame(arr)
+    return(df)
+
+
+def get_lazy_dfs(bxs, ept, srs):
+    lazy = []
+    for bx in bxs:
+        # fill lazy with delayed, executed pdal.pipeline objects
+        lazy.append(delayed(get_points_as_df)(ept, bx, srs))
+
+    return(lazy)
+
+
+def rechunk_ddf(df):
+    '''rechunks a dask df of unknown chunksize'''   
+    cols = df.columns
+    arr = df.to_dask_array(lengths=True)
+    arr = da.rechunk(arr)
+    df = ddf.from_dask_array(arr, columns=cols)
+    return(df)
 
 
 def parse_arguments():
@@ -179,9 +188,14 @@ if __name__ == '__main__':
     size = 3_500
 
     # make list of sub-boxes
-    divide_bbox(box, size)
+    bxs = divide_bbox(box, size)
 
+    # make list with delayed df from each box
+    lazy = get_lazy_dfs(bxs, args.ept, srs)
 
+    # make a dask df, rechunk it so chunks are not unknown
+    points = ddf.from_delayed(lazy)
+    points = rechunk_ddf(points)
 
-
-
+    # make an h5
+    points.to_hdf(os.path.join(args.out, 'test_output.hdf'), '/data-*', compute=True)
