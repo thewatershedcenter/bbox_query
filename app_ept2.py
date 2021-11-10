@@ -175,6 +175,9 @@ if __name__ == '__main__':
     # parse the args
     args = parse_arguments()
 
+    # get vector file basename
+    fname = os.path.basename(args.vector).split('.')[0]
+
     # get srs
     srs = get_ept_srs(args.ept)
 
@@ -198,4 +201,4 @@ if __name__ == '__main__':
     points = rechunk_ddf(points)
 
     # make an h5
-    points.to_hdf(os.path.join(args.out, 'test_output.hdf'), '/data-*', compute=True)
+    points.to_hdf(os.path.join(args.out, f'{fname}.hdf'), '/data-*', compute=True)

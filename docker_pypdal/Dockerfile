@@ -18,6 +18,7 @@ RUN conda install -y -c conda-forge numba \
     laz-perf=2.1.0 \
     numba \
     pandas \
+    pytables \
     python-pdal=2.4.2 \
     shapely 
 
