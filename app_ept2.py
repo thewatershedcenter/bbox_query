@@ -7,7 +7,7 @@ import geopandas as gpd
 from shutil import rmtree
 from dask import delayed, compute
 import pdal
-impot numpy as np
+import numpy as np
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -21,7 +21,7 @@ def get_ept_srs(ept):
     return srs
 
 
-def read_and_transform_vector(vector, srs, fname):
+def read_and_transform_vector(vector, srs):
     # read the vector file
     s = gpd.read_file(vector)
     # get the integer from the srs
@@ -36,5 +36,16 @@ def read_and_transform_vector(vector, srs, fname):
     return(s)
 
 
-if __main__:
+if __name__ == '__main__':
     print(print(pdal.__version__))
+
+    '''
+    s = read_and_transform_vector(vector, srs)
+
+    # get the bbox from the vector
+    x, y = s.geometry.envelope.exterior.values[0].coords.xy
+    minx, maxx, miny, maxy = min(x), max(x), min(y), max(y)
+
+    # pack up the bbox
+    box = ([minx, maxx], [miny, maxy])
+    '''
