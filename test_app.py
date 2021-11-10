@@ -12,7 +12,7 @@ import os
 # TODO: add a dataclas called fake_args to act like args
 # wrap the end of app_ept in a functions so we can test here more directly
 
-vector1 = 'test/test_buff.shp'
+vector1 = 'buffers/fid_17.gpkg'
 
 vector2 = 'test/'
 
@@ -125,4 +125,6 @@ def test_fetch_points_dir():
         print(count)
         assert count > 100
     
+# %%
+
 # %%
