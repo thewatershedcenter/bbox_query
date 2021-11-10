@@ -1,6 +1,6 @@
 #  %%
 from argparse import Namespace
-from app_ept import *
+from app_ept2 import *
 import pandas as pd
 import geopandas as gpd
 from shapely import geometry as gm
@@ -8,9 +8,6 @@ import subprocess
 import json
 import os
 
-
-# TODO: add a dataclas called fake_args to act like args
-# wrap the end of app_ept in a functions so we can test here more directly
 
 vector1 = 'buffers/fid_17.gpkg'
 
@@ -26,7 +23,6 @@ global args
 args = Namespace(vector=vector1, ept=ept, out=out)
 
 # add additional args
-args.vpath = os.path.dirname(args.vector)
 args.hesher = abs(hash(args.ept)) % (10 ** 8)
 args.srs = get_ept_srs(args.ept)
 
