@@ -23,7 +23,7 @@ jobs:
       - run: conda --version
       - run: which python
       - run:
-          conda install -y pdal pytables h5pyy
+          conda install -y pdal pytables h5py
            geopandas dask pytest python-pdal=2.4.2
       - name: Run tests with pytest
         run: pytest 
