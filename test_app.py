@@ -9,9 +9,10 @@ import json
 import os
 import numpy as np
 import pandas as pd
-import dask.dataframe as ddf
+import dask.dataframe as dd
 import dask.array as da
 from time import time
+from dask.diagnostics import ProgressBar
 
 vector1 = 'test/test_buff.shp'
 
@@ -63,61 +64,83 @@ def test_read_and_transform_vector():
     assert poly.contains(s.geometry.values[0])
 
 
-def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
-    '''tests both make_box and divide_bbox'''
-    
-    # get srs
-    srs = get_ept_srs(args.ept)
+srs = get_ept_srs(args.ept)
+s = read_and_transform_vector('test/NorthFork_spanbuffer.gpkg', srs)
 
-    # get transformed polygon of interest
-    s = read_and_transform_vector(args.vector, srs)
+def test_make_box_ALSO_divide_bbox_ALSO_make_pipe(srs=srs, s=s):
+    '''tests both make_box and divide_bbox'''
+
 
     # find bbox of s
+    print('making bbox')
+    t0 = time()
     box = make_bbox(s)
 
-    assert box == ([489013.26329637936, 489116.2366349314],
-                   [4514616.760521351, 4514838.612628906])
-    print('Succesfully tested make_bbox!')
+    t1 = time()
+    print(f'making the bbox took {round((t1-t0), 2)}s')
 
-    size = 10
+    size = 100
 
+    global bxs
+
+    t0 = time()
     bxs = divide_bbox(box, size)
 
-    print(len(bxs))
-    assert len(bxs) == 253
+    t1 = time()
+    print(f'divide_bbox took {round((t1-t0), 2)}s')
+
+    print(f'bbox divided into {len(bxs)} sub-boxes')
+    assert len(bxs) > 1
     print('Succesfully tested divide_bbox!')
 
+
+def test_some_stuff():
+   
     pipe = make_pipe(args.ept, bxs[2], srs)
     assert isinstance(pipe.arrays[0], np.ndarray)
     assert len(pipe.arrays[0]) > 0
-    print(f'Pipeline executed returning a {type(pipe.arrays[0])} of {len(pipe.arrays[0])} points.')
+    print(f'Sample pipeline executed returning a {type(pipe.arrays[0])} of {len(pipe.arrays[0])} points.')
 
     points = get_points_as_df(args.ept, bxs[2], srs)
     assert isinstance(points, pd.DataFrame)
     print(f'get_points_as_df succesfully returned a df of length {len(points)}')
 
+
+def prep():
+    # get srs
+    srs = get_ept_srs(args.ept)
+
+    # use a different (bigger) file this time
+    v = 'test/NorthFork_spanbuffer.gpkg'
+
+    # get vector file basename
+    fname = os.path.basename(v).split('.')[0]
+
+    print('prepped!')
+    return(srs, fname)
+
+
+def test_making_hdf():
+    srs, fname = prep()
+
+    print('Building delayed task graph')
     lazy = get_lazy_dfs(bxs, args.ept, srs)
 
-    t0 = time()
-    points = ddf.from_delayed(lazy)
+    print('making dask array from delayed items...')
 
-    t1 = time()
-    print(f'from_delayed took {(t1-t0)/60}min')
+    with ProgressBar():
+        points = dd.from_delayed(lazy)
+        points = rechunk_dd(points)
+        points.to_hdf(f'/media/data/Downloads/{fname}_*.hdf5', '/data', compute=True)
 
-    t0 = time()
-    points = rechunk_ddf(points)
 
-    t1 = time()
-    print(f'rechunk took {(t1-t0)/60}min')
 
-    t0 = time()
-    points.to_hdf('/media/data/Downloads/test_output.hdf', '/data-*', compute=True)
 
-    t1 = time()
-    print(f'to_hdf took {(t1-t0)/60}min')
 
 # %%
+
 test_make_box_ALSO_divide_bbox_ALSO_make_pipe()
+test_making_hdf()
 # %%
 test_get_ept_srs()
 

@@ -9,8 +9,9 @@ from dask import delayed, compute
 import pdal
 import numpy as np
 import pandas as pd
-import dask.dataframe as ddf
+import dask.dataframe as dd
 import dask.array as da
+from math import ceil
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -62,6 +63,10 @@ def divide_bbox(box, size):
 
     # unpack the box
     ([minx, maxx], [miny, maxy]) = box
+
+    nx = ceil((maxx - minx) / size)
+    ny = ceil((maxy - miny) / size)
+    print(f'This will make {nx*ny} boxes! ({nx} x {ny})')
 
     # calculate x edges of tiles
     x = minx
@@ -139,7 +144,7 @@ def rechunk_ddf(df):
     cols = df.columns
     arr = df.to_dask_array(lengths=True)
     arr = da.rechunk(arr)
-    df = ddf.from_dask_array(arr, columns=cols)
+    df = dd.from_dask_array(arr, columns=cols)
     return(df)
 
 
@@ -197,8 +202,24 @@ if __name__ == '__main__':
     lazy = get_lazy_dfs(bxs, args.ept, srs)
 
     # make a dask df, rechunk it so chunks are not unknown
-    points = ddf.from_delayed(lazy)
+    points = dd.from_delayed(lazy)
     points = rechunk_ddf(points)
 
     # make an h5
-    points.to_hdf(os.path.join(args.out, f'{fname}.hdf'), '/data-*', compute=True)
+    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'),
+                  '/data-*',
+                  compute=True)
+
+    # delete points, which is a ddf based on delayed graph from ept
+    del points
+
+    # replace it with ddf pointing to the h5s on disk
+    points = dd.read_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data-*')
+
+
+def clip_to_vector(daskdf, geodf):
+    '''
+    Returns delayed dask df of points from daskdf which lie
+    within the geometry of geodf.
+    '''
+    
