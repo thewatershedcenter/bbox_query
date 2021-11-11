@@ -15,6 +15,7 @@ from time import time
 from dask.diagnostics import ProgressBar
 
 vector1 = 'test/test_buff.shp'
+vector2 = 'test/fid_5.gpkg'
 
 ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
 
@@ -23,7 +24,7 @@ out = 'poo'
 os.makedirs(out, exist_ok=True)
 
 global args
-args = Namespace(vector=vector1, ept=ept, out=out)
+args = Namespace(vector=vector1, vector2=vector2, ept=ept, out=out)
 
 
 def test_get_ept_srs():
@@ -68,7 +69,7 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     '''tests both make_box and divide_bbox'''
 
     srs = get_ept_srs(args.ept)
-    s = read_and_transform_vector('test/NorthFork_spanbuffer.gpkg', srs)
+    s = read_and_transform_vector(args.vector2, srs)
 
     # find bbox of s
     print('making bbox')
@@ -91,6 +92,13 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     print(f'bbox divided into {len(bxs)} sub-boxes')
     assert len(bxs) > 1
     print('Succesfully tested divide_bbox!')
+
+    print('Building delayed task graph')
+    lazy = get_lazy_dfs(bxs, args.ept, srs)
+
+    points = dd.from_delayed(lazy)
+    points = rechunk_dd(points)
+    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data', compute=True)
 
 '''
 def test_some_stuff():
@@ -132,3 +140,4 @@ def test_making_hdf():
     points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data', compute=True)
 
 '''
+# %%
