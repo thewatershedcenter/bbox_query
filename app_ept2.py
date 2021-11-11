@@ -12,6 +12,7 @@ import pandas as pd
 import dask.dataframe as dd
 import dask.array as da
 from math import ceil
+from shapely.geometry import Point, Polygon
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -148,6 +149,15 @@ def rechunk_ddf(df):
     return(df)
 
 
+def row_in_geodf(row, geodf):
+    '''
+    Returns delayed dask df of points from daskdf which lie
+    within the geometry of geodf.
+    '''
+    poly = geodf.geometry.values[0]
+    return(poly.contains(row.geometry))
+
+
 def parse_arguments():
     '''parses the arguments, returns args'''
 
@@ -213,13 +223,16 @@ if __name__ == '__main__':
     # delete points, which is a ddf based on delayed graph from ept
     del points
 
+    #TODO: break the stuff above here into a function?
+
     # replace it with ddf pointing to the h5s on disk
     points = dd.read_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data-*')
 
+    # add geometry column of points
+    points['geometry'] = points.apply(lambda row: Point(row.X, row.Y, row.Z),
+                                      axis=1)
 
-def clip_to_vector(daskdf, geodf):
-    '''
-    Returns delayed dask df of points from daskdf which lie
-    within the geometry of geodf.
-    '''
+    # subset points to only include those in the polygon
+    points = points.loc[points.apply(lambda row: row_in_geodf(row, s), axis=1, meta=('bool'))]
+
     

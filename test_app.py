@@ -128,24 +128,7 @@ def test_making_hdf():
 
     print('making dask array from delayed items...')
 
-    with ProgressBar():
-        points = dd.from_delayed(lazy)
-        points = rechunk_dd(points)
-        points.to_hdf(f'/media/data/Downloads/{fname}_*.hdf5', '/data', compute=True)
+    points = dd.from_delayed(lazy)
+    points = rechunk_dd(points)
+    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data', compute=True)
 
-
-
-
-
-# %%
-
-test_make_box_ALSO_divide_bbox_ALSO_make_pipe()
-test_making_hdf()
-# %%
-test_get_ept_srs()
-
-# %%
-test_read_and_transform_vector()
-
-
-# %%
