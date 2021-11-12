@@ -98,6 +98,34 @@ def divide_bbox(box, size):
     return(bxs)
 
 
+def is_box_in(box, geodf):
+
+    # unpack the box
+    ([minx, maxx], [miny, maxy]) = box
+
+    # make list of point coords
+    p = [[minx, miny], [minx, maxy], [maxx, maxy], [maxx, miny], [minx, miny]]
+
+    # make polygon box
+    polybox = Polygon(p)
+
+    # check for intersection
+    return(polybox.intersects(geodf.geometry.values[0]))
+
+
+def cull_empty_bxs(bxs, geodf):
+    '''removes sub-boxes not intersecting polygon'''
+    lazy = []
+    for bx in bxs:
+        lazy.append(delayed(is_box_in)(box, geodf))
+
+    # compute the mask and mask the list
+    mask = compute(*lazy)
+    bxs = [bxs[i] for i in range(len(bxs)) if mask[i]]
+
+    return(bxs)
+
+
 def make_pipe(ept, bbox, srs):
     '''Creates, validates and then returns the pdal pipeline'''
 
@@ -208,6 +236,9 @@ if __name__ == '__main__':
 
     # make list of sub-boxes
     bxs = divide_bbox(box, size)
+
+    # get rid of boxes that do not intersect polygon
+    bxs = cull_empty_bxs(bxs, s)
 
     # make list with delayed df from each box
     lazy = get_lazy_dfs(bxs, args.ept, srs)
