@@ -203,7 +203,7 @@ if __name__ == '__main__':
     box = make_bbox(s)
 
     # define sub box size, TODO: getthis from a function
-    size = 3_500
+    size = 250
 
     # make list of sub-boxes
     bxs = divide_bbox(box, size)
@@ -216,8 +216,8 @@ if __name__ == '__main__':
     points = rechunk_ddf(points)
 
     # make an h5
-    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'),
-                  '/data-*',
+    points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'),
+                  '/data',
                   compute=True)
 
     # delete points, which is a ddf based on delayed graph from ept
@@ -226,7 +226,7 @@ if __name__ == '__main__':
     #TODO: break the stuff above here into a function?
 
     # replace it with ddf pointing to the h5s on disk
-    points = dd.read_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data-*')
+    points = dd.read_hdf(os.path.join(args.out, f'{fname}_*.hdf5'), '/data')
 
     # add geometry column of points
     points['geometry'] = points.apply(lambda row: Point(row.X, row.Y, row.Z),

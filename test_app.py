@@ -63,14 +63,13 @@ def test_read_and_transform_vector():
     assert poly.contains(s.geometry.values[0])
 
 
-
-
 def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     '''tests both make_box and divide_bbox'''
 
     srs = get_ept_srs(args.ept)
     s = read_and_transform_vector(args.vector2, srs)
-
+    # get vector file basename
+    fname = os.path.basename(args.vector2).split('.')[0]
     # find bbox of s
     print('making bbox')
     t0 = time()
@@ -97,47 +96,6 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     lazy = get_lazy_dfs(bxs, args.ept, srs)
 
     points = dd.from_delayed(lazy)
-    points = rechunk_dd(points)
-    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data', compute=True)
+    points = rechunk_ddf(points)
+    points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'), '/data', compute=True)
 
-'''
-def test_some_stuff():
-   
-    pipe = make_pipe(args.ept, bxs[2], srs)
-    assert isinstance(pipe.arrays[0], np.ndarray)
-    assert len(pipe.arrays[0]) > 0
-    print(f'Sample pipeline executed returning a {type(pipe.arrays[0])} of {len(pipe.arrays[0])} points.')
-
-    points = get_points_as_df(args.ept, bxs[2], srs)
-    assert isinstance(points, pd.DataFrame)
-    print(f'get_points_as_df succesfully returned a df of length {len(points)}')
-
-
-def prep():
-    # get srs
-    srs = get_ept_srs(args.ept)
-
-    # use a different (bigger) file this time
-    v = 'test/NorthFork_spanbuffer.gpkg'
-
-    # get vector file basename
-    fname = os.path.basename(v).split('.')[0]
-
-    print('prepped!')
-    return(srs, fname)
-
-
-def test_making_hdf():
-    srs, fname = prep()
-
-    print('Building delayed task graph')
-    lazy = get_lazy_dfs(bxs, args.ept, srs)
-
-    print('making dask array from delayed items...')
-
-    points = dd.from_delayed(lazy)
-    points = rechunk_dd(points)
-    points.to_hdf(os.path.join(args.out, f'{fname}.hdf5'), '/data', compute=True)
-
-'''
-# %%
