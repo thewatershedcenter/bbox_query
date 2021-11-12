@@ -13,6 +13,7 @@ import dask.dataframe as dd
 import dask.array as da
 from math import ceil
 from shapely.geometry import Point, Polygon
+from dask.diagnostics import ProgressBar
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -212,27 +213,43 @@ if __name__ == '__main__':
     lazy = get_lazy_dfs(bxs, args.ept, srs)
 
     # make a dask df, rechunk it so chunks are not unknown
-    points = dd.from_delayed(lazy)
+    print('from delayed and rechunk')
+    with ProgressBar():
+        points = dd.from_delayed(lazy)
     points = rechunk_ddf(points)
 
     # make an h5
-    points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'),
-                  '/data',
-                  compute=True)
+    print('write hdf')
+    with ProgressBar():
+        points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'),
+                      '/data',
+                      compute=True)
 
     # delete points, which is a ddf based on delayed graph from ept
     del points
 
-    #TODO: break the stuff above here into a function?
+    # TODO: break the stuff above here into a function?
 
     # replace it with ddf pointing to the h5s on disk
-    points = dd.read_hdf(os.path.join(args.out, f'{fname}_*.hdf5'), '/data')
+    print('read hdf')
+    with ProgressBar():
+        points = dd.read_hdf(os.path.join(args.out, f'{fname}_*.hdf5'),
+                             '/data')
 
     # add geometry column of points
-    points['geometry'] = points.apply(lambda row: Point(row.X, row.Y, row.Z),
-                                      axis=1)
+    print('apply geometry')
+    with ProgressBar():
+        points['geometry'] = points.apply(lambda row: Point(row.X,
+                                                            row.Y,
+                                                            row.Z), axis=1)
 
     # subset points to only include those in the polygon
-    points = points.loc[points.apply(lambda row: row_in_geodf(row, s), axis=1, meta=('bool'))]
+    print('clip points')
+    with ProgressBar():
+        points = points.loc[points.apply(lambda row: row_in_geodf(row, s),
+                                         axis=1,
+                                         meta=('bool'))]
 
-    
+    print('compute')
+    with ProgressBar():
+        points.compute()
