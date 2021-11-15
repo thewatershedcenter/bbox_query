@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       # A matrix of Dockerfile paths and associated tags
       matrix:
-        dockerfile: [[docker_pdal/Dockerfile, ept-], [docker_pypdal/Dockerfile, py-]]
+        dockerfile: [[docker_pdal/Dockerfile, ept-], [docker_pypdal/Dockerfile, py-], [docker_pypdal_vice/Dockerfile, vice-]]
     steps:
       - name: Get short SHA
         id: shorty
