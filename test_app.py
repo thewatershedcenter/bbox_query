@@ -13,6 +13,7 @@ import dask.dataframe as dd
 import dask.array as da
 from time import time
 from dask.diagnostics import ProgressBar
+from shapely.geometry import Point, Polygon
 
 vector1 = 'test/test_buff.shp'
 vector2 = 'test/fid_5.gpkg'
@@ -92,6 +93,9 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     assert len(bxs) > 1
     print('Succesfully tested divide_bbox!')
 
+    # get rid of boxes that do not intersect polygon
+    bxs = cull_empty_bxs(bxs, s)
+
     print('Building delayed task graph')
     lazy = get_lazy_dfs(bxs, args.ept, srs)
 
@@ -99,3 +103,5 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     points = rechunk_ddf(points)
     points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'), '/data', compute=True)
 
+
+# %%

@@ -117,13 +117,14 @@ def cull_empty_bxs(bxs, geodf):
     '''removes sub-boxes not intersecting polygon'''
     lazy = []
     for bx in bxs:
-        lazy.append(delayed(is_box_in)(box, geodf))
+        lazy.append(delayed(is_box_in)(bx, geodf))
 
     # compute the mask and mask the list
+    print('culling boxes')
     mask = compute(*lazy)
-    bxs = [bxs[i] for i in range(len(bxs)) if mask[i]]
-
-    return(bxs)
+    fewer_bxs = [bxs[i] for i in range(len(bxs)) if mask[i]]
+    print(f'Number of boxes reduce to {len(fewer_bxs)}')
+    return(fewer_bxs)
 
 
 def make_pipe(ept, bbox, srs):
@@ -232,7 +233,7 @@ if __name__ == '__main__':
     box = make_bbox(s)
 
     # define sub box size, TODO: getthis from a function
-    size = 250
+    size = 100
 
     # make list of sub-boxes
     bxs = divide_bbox(box, size)
