@@ -43,10 +43,10 @@ def read_and_transform_vector(vector, srs):
     return(s)
 
 
-def make_bbox(geodf, row):
+def make_bbox(geodf):
     '''returns bbox of a geodf in pdal format'''
     # get the bbox from the vector
-    x, y = geodf.geometry.envelope.exterior.values[row].coords.xy
+    x, y = geodf.geometry.envelope.exterior.values[0].coords.xy
     minx, maxx, miny, maxy = min(x), max(x), min(y), max(y)
 
     # pack up the bbox
@@ -138,28 +138,6 @@ def make_pipe(ept, bbox, srs):
                 'filename': ept,
                 'type': 'readers.ept',
                 'spatialreference': srs
-            },
-            {
-                'type': 'filters.elm'
-            },
-            {
-                'type': 'filters.assign',
-                'assignment': 'Classification[:]=0',
-                'where': 'Classification > 20'
-            },
-            {
-                'type': 'filters.outlier',
-                'method': 'radius',
-                'radius': 1.0,
-                'min_k': 6
-            },
-            {
-                'type': 'filters.hag_nn',
-                'count': 2
-            },
-            {
-                'type': 'filters.range',
-                'limits': 'HeightAboveGround[0:88]'
             }
         ]
     }
@@ -251,10 +229,8 @@ if __name__ == '__main__':
     # read vector to geodf
     s = read_and_transform_vector(args.vector, srs)
 
-    # find bboxs of s
-    bboxes = []
-    for i in range(len(s)):
-        box = make_bbox(s, i)
+    # find bbox of s
+    box = make_bbox(s)
 
     # define sub box size, TODO: getthis from a function
     size = 100
@@ -272,7 +248,7 @@ if __name__ == '__main__':
     print('from delayed and rechunk')
     with ProgressBar():
         points = dd.from_delayed(lazy)
-        points = rechunk_ddf(points)
+    points = rechunk_ddf(points)
 
     # make an h5
     print('write hdf')

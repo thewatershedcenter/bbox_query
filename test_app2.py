@@ -139,5 +139,25 @@ def test_main():
     for bxs in bboxes:
         bxs = cull_empty_bxs(bxs, s)
 
+    # merge all of the sublists to one
+    bxs = [[b for b in sublist] for sublist in bboxes]
 
+    # make list with delayed df from each box
+    lazy = get_lazy_dfs(bxs, args.ept, srs)
+
+    # make a dask df, rechunk it so chunks are not unknown
+    print('from delayed and rechunk')
+    with ProgressBar():
+        points = dd.from_delayed(lazy)
+        points = rechunk_ddf(points)
+
+    # make an h5
+    print('write hdf')
+    with ProgressBar():
+        points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'),
+                      '/data',
+                      compute=True)
+
+    # delete points, which is a ddf based on delayed graph from ept
+    del points
 # %%
