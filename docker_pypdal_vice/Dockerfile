@@ -3,6 +3,8 @@ LABEL maintainer="michaelhuggins@protonmail.com"
 SHELL [ "/bin/bash", "--login", "-c" ]
 WORKDIR /
 
+USER root
+
 # print version info
 RUN echo "---------------------------------------------------------" \
     && cat /etc/*-release \

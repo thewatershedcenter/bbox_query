@@ -43,10 +43,10 @@ def read_and_transform_vector(vector, srs):
     return(s)
 
 
-def make_bbox(geodf):
+def make_bbox(geodf, row):
     '''returns bbox of a geodf in pdal format'''
     # get the bbox from the vector
-    x, y = geodf.geometry.envelope.exterior.values[0].coords.xy
+    x, y = geodf.geometry.envelope.exterior.values[row].coords.xy
     minx, maxx, miny, maxy = min(x), max(x), min(y), max(y)
 
     # pack up the bbox
@@ -138,6 +138,28 @@ def make_pipe(ept, bbox, srs):
                 'filename': ept,
                 'type': 'readers.ept',
                 'spatialreference': srs
+            },
+            {
+                'type': 'filters.elm'
+            },
+            {
+                'type': 'filters.assign',
+                'assignment': 'Classification[:]=0',
+                'where': 'Classification > 20'
+            },
+            {
+                'type': 'filters.outlier',
+                'method': 'radius',
+                'radius': 1.0,
+                'min_k': 6
+            },
+            {
+                'type': 'filters.hag_nn',
+                'count': 2
+            },
+            {
+                'type': 'filters.range',
+                'limits': 'HeightAboveGround[0:88]'
             }
         ]
     }
@@ -229,8 +251,10 @@ if __name__ == '__main__':
     # read vector to geodf
     s = read_and_transform_vector(args.vector, srs)
 
-    # find bbox of s
-    box = make_bbox(s)
+    # find bboxs of s
+    bboxes = []
+    for i in range(len(s)):
+        box = make_bbox(s, i)
 
     # define sub box size, TODO: getthis from a function
     size = 100

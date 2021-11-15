@@ -16,7 +16,7 @@ from dask.diagnostics import ProgressBar
 from shapely.geometry import Point, Polygon
 
 vector1 = 'test/test_buff.shp'
-vector2 = 'test/fid_5.gpkg'
+vector = 'test/nftiles/north_fork_tiles.shp'
 
 ept = 'https://storage.googleapis.com/monument_bucket/CarrHirzDelta_1/entwine/ept.json'
 
@@ -25,7 +25,7 @@ out = 'poo'
 os.makedirs(out, exist_ok=True)
 
 global args
-args = Namespace(vector=vector1, vector2=vector2, ept=ept, out=out)
+args = Namespace(vector=vector, vector2=vector2, ept=ept, out=out)
 
 
 def test_get_ept_srs():
@@ -69,22 +69,29 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
 
     srs = get_ept_srs(args.ept)
     s = read_and_transform_vector(args.vector2, srs)
+
     # get vector file basename
     fname = os.path.basename(args.vector2).split('.')[0]
-    # find bbox of s
-    print('making bbox')
+
+    print('making bboxes')
     t0 = time()
-    box = make_bbox(s)
+
+    # find bboxs of s
+    boxes = []
+    for i in range(len(s)):
+        boxes.append(make_bbox(s, i))
 
     t1 = time()
     print(f'making the bbox took {round((t1-t0), 2)}s')
 
-    size = 100
+    size = 500
 
     global bxs
 
     t0 = time()
-    bxs = divide_bbox(box, size)
+    for i, box in enumerate(boxes):
+        bxs = divide_bbox(box, size)
+        boxes[i] = bxs
 
     t1 = time()
     print(f'divide_bbox took {round((t1-t0), 2)}s')
@@ -104,4 +111,19 @@ def test_make_box_ALSO_divide_bbox_ALSO_make_pipe():
     points.to_hdf(os.path.join(args.out, f'{fname}_*.hdf5'), '/data', compute=True)
 
 
+
+def test_main():
+    # get vector file basename
+    fname = os.path.basename(args.vector).split('.')[0]
+
+    # get srs
+    srs = get_ept_srs(args.ept)
+
+    # read vector to geodf
+    s = read_and_transform_vector(args.vector, srs)
+
+    # find bboxs of s
+    bboxes = []
+    for i in range(len(s)):
+        box = make_bbox(s, i)
 # %%
