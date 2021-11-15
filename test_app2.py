@@ -126,4 +126,18 @@ def test_main():
     bboxes = []
     for i in range(len(s)):
         box = make_bbox(s, i)
+
+    # define sub box size, TODO: getthis from a function
+    size = 100
+
+    # make list of sub-boxes
+    for i, box in enumerate(bboxes):
+        bxs = divide_bbox(box, size)
+        boxes[i] = bxs
+
+    # get rid of boxes that do not intersect polygon
+    for bxs in bboxes:
+        bxs = cull_empty_bxs(bxs, s)
+
+
 # %%

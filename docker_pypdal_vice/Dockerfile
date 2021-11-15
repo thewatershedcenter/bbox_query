@@ -10,7 +10,7 @@ RUN echo "---------------------------------------------------------" \
     && cat /etc/*-release \
     && echo "---------------------------------------------------------"
 
-# onstall pdal
+# install pdal
 RUN conda install -y -c conda-forge numba \
     entwine \
     dask \

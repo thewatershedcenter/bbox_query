@@ -272,7 +272,7 @@ if __name__ == '__main__':
     print('from delayed and rechunk')
     with ProgressBar():
         points = dd.from_delayed(lazy)
-    points = rechunk_ddf(points)
+        points = rechunk_ddf(points)
 
     # make an h5
     print('write hdf')
