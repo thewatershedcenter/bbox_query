@@ -138,6 +138,23 @@ def make_pipe(ept, bbox, srs):
                 'filename': ept,
                 'type': 'readers.ept',
                 'spatialreference': srs
+            },
+            {
+                'type': 'filters.elm'
+            },
+            {
+                'type': 'filters.outlier',
+                'method': 'radius',
+                'radius': 1.0,
+                'min_k': 6
+            },
+            {
+                'type': 'filters.hag_nn',
+                'count': 2
+            },
+            {
+                'type': 'filters.range',
+                'limits': 'HeightAboveGround[0:88]'
             }
         ]
     }
